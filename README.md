@@ -63,6 +63,7 @@ These separate juniors from mid-level devs:
     - Containers: Docker
     - Cloud basics: Amazon Web Services (EC2, S3, RDS)
     - CI/CD basics
+    
 👉 This alone can differentiate you from many junior candidates
 
 ### 🧪 5. Build 2–3 Real Projects (CRUCIAL)
