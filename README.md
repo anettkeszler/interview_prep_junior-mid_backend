@@ -4,6 +4,7 @@ If you’re aiming for a junior–mid backend engineer role, the goal isn’t to
 
 ### 1. Core Fundamentals (non-negotiable)
 - These matter more than any framework — interviewers always test this.
+
 🔹 **Programming & Problem Solving**
 - Data structures: arrays, hash maps, trees, graphs
 - Algorithms: sorting, searching, recursion, BFS/DFS
@@ -58,7 +59,7 @@ These separate juniors from mid-level devs:
 - Use GitHub actively
 
 ### ☁️ 4. DevOps & Deployment (huge bonus)
-You don’t need to be an expert, but know basics:
+- You don’t need to be an expert, but know basics:
     - Containers: Docker
     - Cloud basics: Amazon Web Services (EC2, S3, RDS)
     - CI/CD basics
