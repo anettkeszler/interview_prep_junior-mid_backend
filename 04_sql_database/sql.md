@@ -1,0 +1,276 @@
+# SQL 
+source: sqlbolt.com
+
+SQL (**Structured Query Language**) is a language designed to allow users to query, manipulate and transform data from a relational database.
+
+A **relational database** represents a collection of related (two-dimensional) tables.
+
+Each of the **tables** are similar to an Excel spreadsheet, with a fixed number of named columns (the attributes or properties of the table) and any number of rows (entity, instance) of data.
+
+- Some SQL databases: SQLite, MySQL, PostgresQL, Oracle and Microsoft SQL Server.
+- SQL databases provide safe and scalable storage for millions of websites and mobile applications.
+
+## SELECT queries
+- A **query** in itself is just a statement which declares what data we are looking for, where to find it in the database, and optionally, how to transform it before it is returned.
+```
+SELECT column, another_column
+FROM mytable;
+```
+To retrieve all the columns of data from the table:
+```
+SELECT * 
+FROM mytable;
+```
+### Queries with constraints
+In order to filter certain results from being returned, we need to use a **```WHERE```** clause in the query. The clause is applied to each row of data by checking specific column values to determine whether it should be included in the results or not. 
+
+It makes the result **more managable to understand**, and allows the query **run faster** due to the reduction in unnecessary data being returned. 
+```
+SELECT column, another_column
+FROM mytable
+WHERE condition
+  AND/OR another_condition
+  AND/OR ...;
+```
+
+Below are some useful operators that you can use for numerical data (ie. **integer or floating point**):
+
+![alt text](/04_sql_database/screenshots//sql.png)
+
+SQL supports a number of useful **text-data specific operators** (**case-insensitive string comparison, wildcard pattern matching**):  
+
+![alt text](/04_sql_database/screenshots/sql2.png)
+
+All strings must be quoted so that the query parser can distinguish words in the string from SQL keywords.
+
+
+**```DISTINCT```** keyword: provides a convenient way to discard rows that have a duplicate column value, it gives a unique result.
+
+```
+SELECT DISTINCT column, another_column
+FROM mytable
+WHERE condition;
+```
+
+SQL provides a way to sort your results by a given column in ascending or descending order using the **```ORDER BY```** clause. When an ORDER BY clause is specified, each row is sorted alpha-numerically based on the specified column's value.
+```
+SELECT column, another_column
+FROM mytable
+WHERE condition(s)
+ORDER BY column ASC/DESC;
+```
+Another clause which is commonly used with the ORDER BY clause are the **```LIMIT```** and **```OFFSET```** clauses, which are a useful optimization to indicate to the database the subset of the results you care about. 
+
+**The LIMIT will reduce the number of rows to return, and the optional OFFSET will specify where to begin counting the number rows from.**
+```
+SELECT column, another_column
+FROM mytable
+WHERE condition(s)
+ORDER BY column ASC/DESC
+LIMIT num_limit OFFSET num_offset;
+```
+## Multi-table queries with JOINs
+Entity data in the real world is often broken down into pieces and stored across multiple orthogonal tables using a process known as normalization. 
+**Database normalization** minimizes duplicate data in the table and allows for data to grow independently of each other. (reduce data redundancy and improve data integrity)
+
+Using **```JOIN```** clause can combine row data across two separate tables via using a unique **```PRIMARY KEY```**. 
+
+```
+SELECT column, another_table_column, …
+FROM mytable
+INNER / LEFT / RIGHT / FULL JOIN another_table 
+    ON mytable.id = another_table.id
+WHERE condition(s)
+ORDER BY column, … ASC/DESC
+LIMIT num_limit OFFSET num_offset;
+```
+
+- **```INNER JOIN```**: matches rows from the first table and the second table which has the same key to create a result row with the combined columns from both tables. 
+
+- **```LEFT / RIGHT / FULL JOIN```**: if the two tables have asymmetric data we use this to ensure that the data we need in not left out of the results. 
+
+- **```LEFT JOIN```**: when joining table A and table B, LEFT JOIN includes rows from table A regardless of whether a matching row is found in table B. 
+
+- **```RIGHT JOIN```**: is the same, but reversed, keeping rows in table B regardless of whether a match is found in table A. 
+
+- **```FULL JOIN```**: simply means that rows from both tables are kept, regardless of whether a matching row exists in the other table.
+
+**NULLS:**
+When using any of these new joins, you will likely have to write additional logic to deal with **NULLs** in the result and constraints. 
+
+It's always good to reduce the possibility of NULL values in databases because they require special attention when constructing queries, constraints (certain functions behave differently with null values) and when processing the results.
+
+An alternative to NULL values in your database is to have **data-type appropriate default values**, like 0 for numerical data, empty strings for text data, etc. 
+
+Sometimes, it's also not possible to avoid NULL values, as we saw in the last lesson when outer-joining two tables with asymmetric data. In these cases, you can test a column for NULL values in a WHERE clause by using either the IS NULL or IS NOT NULL constraint.
+```
+SELECT column, another_column, …
+FROM mytable
+WHERE column IS/IS NOT NULL
+AND/OR another_condition
+AND/OR …;
+```
+### Queries with expressions
+You can use expressions to write more complex logic on column values in query.
+```
+SELECT speed / 2 AS half_speed
+FROM physics_data
+WHERE ABS(position) * 10.0 > 500;
+```
+The use of expressions can save time and extra post-processing of the result data, but can also make the query harder to read, so we recommend that when expressions are used in the SELECT part of the query, that they are also given a descriptive alias using the AS keyword.
+
+In addition to expressions, regular columns and even tables can also have aliases to make them easier to reference in the output and as a part of simplifying more complex queries.
+```
+SELECT column AS better_column_name, …
+FROM a_long_widgets_table_name AS mywidgets
+INNER JOIN widget_sales
+  ON mywidgets.id = widget_sales.widget_id;
+```
+
+### Queries with aggrergates
+Aggregate expressions or functions allows you to summerize information about a group of rows of data.
+
+Here are some common aggregate functions that we are going to use in our examples:
+
+![alt text](/04_sql_database/screenshots/sql3.png)
+
+The **GROUP BY** clause works by grouping rows that have the same value in the column specified.
+
+**HAVING** clause is used specifically with the GROUP BY clause to allow us to filter grouped rows from the result set. The HAVING clause constraints are written the same way as the WHERE clause constraints, and are applied to the grouped rows.
+
+```
+SELECT AGG_FUNC(column_or_expression) AS aggregate_description, …
+FROM mytable
+WHERE constraint_expression
+GROUP BY column
+HAVING group_condition;
+```
+### Order of execution of a query
+```
+5. SELECT 6. DISTINCT column, AGG_FUNC(column_or_expression), …
+1.FROM mytable
+1.JOIN another_table
+      ON mytable.column = another_table.column
+2. WHERE constraint_expression
+3. GROUP BY column
+4. HAVING constraint_expression
+7. ORDER BY column ASC/DESC
+8. LIMIT count OFFSET COUNT;
+```
+Each query begins with finding the data that we need in a database, and then filtering that data down into something that can be processed and understood as quickly as possible. Because each part of the query is executed sequentially, it's important to understand the order of execution so that you know what results are accessible where.
+
+## SQL Schema 
+In SQL, the database **schema** is what describes the structure of each table, and the datatypes that each column of the table can contain. (e.g. year column must be an Integer, title column must be a String). 
+
+A table is a two-dimensional set of rows and columns, with the columns being the properties and the rows being instances of the entity in the table. 
+
+### Inserting rows
+When inserting data into a database, each row of data you insert should contain values for every corresponding column in the table. You can insert multiple rows at a time by just listing them sequentially.
+```
+INSERT INTO mytable
+VALUES (value_or_expr, another_value_or_expr, ...),
+    (value_or_expr2, another_value_or_expr2, ...);
+
+
+INSERT INTO boxoffice
+ (movie_id, rating, sales_in_millions)
+ VALUES (1, 9.9, 283);
+```
+### Updating rows
+Updating data. You have to specify exactly which table, columns and rows to update. 
+```
+UPDATE mytable
+SET column = value_or_expr,
+    other_column = another_value_or_exp,
+    ...
+WHERE condition;
+```
+WHERE clause: important to use, always write the constraint first and test it in a SELECT query to make sure you are updating the right rows. Otherwise you can update all rows by mistake. 
+
+### Deleting rows
+```
+DELETE FROM mytable
+WHERE condition;
+```
+If you leave out WHERE constraint, then all rows are removed, it clears out a table completely.
+
+Tip: before you delete, run the constraint in a SELECT query first to ensure you are removing the right rows. 
+
+### Creating table
+```
+CREATE TABLE IF NOT EXISTS mytable (
+    column DataType TableConstraint DEFAULT default_value,
+    another_column DataType TableConstraint DEFAULT default_value,
+    …
+);
+```
+If there already exists a table with the same name, the SQL implementation will usually throw an error, so to suppress the error and skip creating a table if one exists, you can use the IF NOT EXISTS clause.
+#### Data types
+- INTEGER: whole integer values / BOOLEAN: 0 or 1
+
+- FLOAT, DOUBLE, REAL: more precise numerical data
+
+- CHARACTER, VARCHAR, TEXT: text based datatypes 
+
+- DATE, DATETIME 
+
+- BLOB: sql store binary data in blobs
+
+#### Table Constraints 
+Each column can have additional table constraints on it which limit what values can be inserted into that column. 
+
+- PRIMARY KEY: The values in this column are unique, and each value can be used to identify a single row in this table. (e.g. auto-increment integer -space efficient -, but can be string or hashed value, as long as they are unique)
+
+- AUTOINCREMENT: The value is automatically filled in and incremented with each row insertion
+
+- UNIQUE: Values in this column have to be unique, so you can't insert another row with the same value in this column
+
+- NOT NULL: The inserted value can not be NULL.
+
+- CHECK (expression): This allows you to run a more complex expression to test whether the values inserted are valid. For example, you can check that values are positive, or greater than a specific size, or start with a certain prefix, etc.
+
+- FOREIGN KEY: This is a consistency check which ensures that each value in this column corresponds to another value in a column in another table.
+
+#### Example
+```
+CREATE TABLE movies (
+    id INTEGER PRIMARY KEY,
+    title TEXT,
+    director TEXT,
+    year INTEGER, 
+    length_minutes INTEGER
+);
+```
+### Altering tables
+
+```
+ALTER TABLE mytable;
+```
+
+It provides a way to update the corresponding tables and database schemas by using the ALTER TABLE statement to add, remove or modify columns and table constraints.
+
+#### Adding columns
+```
+ALTER TABLE mytable
+ADD COLUMN ColumnName DataType DEFAULT default_value;
+```
+#### Removing columns
+```
+ALTER TABLE mytable
+DROP column_to_be_deleted;
+```
+#### Renaming the table
+```
+ALTER TABLE mytable
+RENAME TO new_table_name;
+```
+### Remove table
+```
+DROP TABEL IF EXISTS mytable;
+``` 
+To remove an entire table including all of its data and metadata. It also removes the table schema from the database entirily. (Compare to DELETE)
+
+**IF EXISTS**  clause: the database may throw an error if the specified table does not exists and to avoid this error we use IF EXISTS clause. 
+
+In addition, if you have another table that is dependent on columns in table you are removing (for example, with a FOREIGN KEY dependency) then you will have to either update all dependent tables first to remove the dependent rows or to remove those tables entirely.
+
