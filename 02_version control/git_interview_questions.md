@@ -474,6 +474,38 @@ git diff HEAD
 git show --name-only <commit-hash>
 ```
 
+## 32. How do you perform a squash commit in Git? 
+- Squashing commits means combining multiple commits into a single one, usually using interactive rebase or squash merge, to keep history clean and meaningful.
+- **Method 1**: Interactive rebase (most important): 
+    ```
+    git rebase -i HEAD~3    (Means: “rewrite last 3 commits”)
+    ```
+    ``` 
+    # you will see something like this: 
+    pick a1b2c3 first commit
+    pick d4e5f6 second commit
+    pick g7h8i9 third commit
+
+    # change for this: 
+    pick a1b2c3 first commit
+    squash d4e5f6 second commit
+    squash g7h8i9 third commit
+    ```
+    - Git combines commits
+    - You edit the final commit message
+- **Method 2**: Squash during merge
+    ```
+    git merge --squash feature
+    ```
+    - this takes all changes from feature
+    - applies them as one commit
+    - does NOT preserve commit history
+- Squashing rewrites history
+    - new commit hashes
+    - old commits disappear
+
+
+
 
 
 
