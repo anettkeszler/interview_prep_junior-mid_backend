@@ -145,6 +145,8 @@ If you plan to use Github from your local device, the recommended way to authent
 - **Remote repository**: we push our commits into the remote repository (on GitHub) (**git push**)
 
 ![alt text](/02_version%20control/screenshots/git_local_remote.png)
+![alt text](/02_version%20control/screenshots/cheatsheet.png)
+
 
 ### Branches:
 - Before creating a new branch, make sure that your branch is up to date with the 'origen/main', and nothing to commit, working tree clean 
